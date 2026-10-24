@@ -4,11 +4,14 @@ import com.jerokysys.auth.dto.CreateUserRequest;
 import com.jerokysys.auth.dto.UpdateUserRequest;
 import com.jerokysys.auth.dto.UserResponse;
 import com.jerokysys.auth.service.UserService;
+import com.jerokysys.commons.common.PageResult;
+import com.jerokysys.commons.common.PagedFilter;
 import com.jerokysys.commons.common.Response;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -16,8 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -36,8 +37,8 @@ public class UserController {
     }
 
     @GetMapping
-    public Response<List<UserResponse>> findAll() {
-        return Response.success(userService.findAll());
+    public Response<PageResult<UserResponse>> findAll(@ModelAttribute PagedFilter filter) {
+        return Response.success(userService.findAll(filter));
     }
 
     @GetMapping("/{id}")
@@ -52,7 +53,6 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     public Response<Void> delete(@PathVariable Long id) {
         userService.delete(id);
         return Response.success("User deleted");

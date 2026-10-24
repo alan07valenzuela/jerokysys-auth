@@ -31,7 +31,7 @@ public class SecurityConfig {
                         // Login y documentacion.
                         .requestMatchers("/login", "/error",
                                 "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        // Todo lo demas exige un ADMIN autenticado.
+                        // Lo demas exige un ADMIN autenticado.
                         .anyRequest().hasRole("ADMIN"))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService),
                         UsernamePasswordAuthenticationFilter.class)

@@ -5,15 +5,25 @@ import com.jerokysys.auth.dto.CreateUserRequest;
 import com.jerokysys.auth.dto.UpdateUserRequest;
 import com.jerokysys.auth.dto.UserResponse;
 import com.jerokysys.auth.repo.UserRepository;
+import com.jerokysys.commons.common.PageResult;
+import com.jerokysys.commons.common.PagedFilter;
 import com.jerokysys.commons.exception.BusinessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 @Service
 public class UserService {
+
+    private static final Set<String> SORTABLE_FIELDS = Set.of("id", "username", "role", "active", "createdAt");
+    private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final int MAX_PAGE_SIZE = 100;
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -34,7 +44,7 @@ public class UserService {
                     "Only PROFESSOR or SECRETARY can be self-registered");
         }
 
-        String username = request.username().trim();
+        String username = normalizeUsername(request.username());
         if (userRepository.findByUsernameIgnoreCase(username).isPresent()) {
             throw new BusinessException("CONFLICT", "Username already exists: " + username);
         }
@@ -48,10 +58,26 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponse> findAll() {
-        return userRepository.findAll().stream()
-                .map(UserService::toResponse)
-                .toList();
+    public PageResult<UserResponse> findAll(PagedFilter filter) {
+        int page = filter.getPage() == null ? 0 : Math.max(filter.getPage(), 0);
+        int size = filter.getSize() == null ? DEFAULT_PAGE_SIZE
+                : Math.min(Math.max(filter.getSize(), 1), MAX_PAGE_SIZE);
+        String sortField = filter.getSort() != null && SORTABLE_FIELDS.contains(filter.getSort())
+                ? filter.getSort() : "id";
+        Sort.Direction direction = "DESC".equalsIgnoreCase(filter.getDirection())
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+        Page<UserResponse> users = userRepository
+                .findAll(PageRequest.of(page, size, Sort.by(direction, sortField)))
+                .map(UserService::toResponse);
+
+        return PageResult.<UserResponse>builder()
+                .content(users.getContent())
+                .totalElements(users.getTotalElements())
+                .totalPages(users.getTotalPages())
+                .page(users.getNumber())
+                .size(users.getSize())
+                .build();
     }
 
     @Transactional(readOnly = true)
@@ -73,7 +99,7 @@ public class UserService {
             user.setActive(request.active());
         }
 
-        return toResponse(userRepository.save(user));
+        return toResponse(user);
     }
 
     /** Borrado logico: BaseEntity.deleted lo saca de todas las consultas. */
@@ -82,13 +108,16 @@ public class UserService {
         User user = getOrThrow(id);
         user.setDeleted(true);
         user.setActive(false);
-        userRepository.save(user);
     }
 
     private User getOrThrow(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("ENTITY_NOT_FOUND",
                         "User not found with id: " + id));
+    }
+
+    private static String normalizeUsername(String username) {
+        return username.trim().toLowerCase(Locale.ROOT);
     }
 
     private static UserResponse toResponse(User user) {

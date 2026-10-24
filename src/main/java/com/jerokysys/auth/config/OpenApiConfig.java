@@ -17,9 +17,7 @@ public class OpenApiConfig {
     public OpenAPI authOpenAPI() {
         return new OpenAPI()
                 .info(new Info().title("jerokysys-auth").version("v1"))
-                // Hace que Swagger UI adjunte "Authorization: Bearer <token>"
                 .addSecurityItem(new SecurityRequirement().addList(BEARER))
-                // Declara el esquema; sin esto no aparece el boton Authorize
                 .components(new Components().addSecuritySchemes(BEARER,
                         new SecurityScheme()
                                 .type(SecurityScheme.Type.HTTP)
