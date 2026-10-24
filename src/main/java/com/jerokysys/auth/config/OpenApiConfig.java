@@ -1,0 +1,29 @@
+package com.jerokysys.auth.config;
+
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class OpenApiConfig {
+
+    public static final String BEARER = "bearerAuth";
+
+    @Bean
+    public OpenAPI authOpenAPI() {
+        return new OpenAPI()
+                .info(new Info().title("jerokysys-auth").version("v1"))
+                // Hace que Swagger UI adjunte "Authorization: Bearer <token>"
+                .addSecurityItem(new SecurityRequirement().addList(BEARER))
+                // Declara el esquema; sin esto no aparece el boton Authorize
+                .components(new Components().addSecuritySchemes(BEARER,
+                        new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")));
+    }
+}

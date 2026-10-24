@@ -6,7 +6,6 @@ import com.jerokysys.auth.service.JWTService;
 import com.jerokysys.auth.service.LoginAttempts;
 import com.jerokysys.auth.service.UserStore;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
