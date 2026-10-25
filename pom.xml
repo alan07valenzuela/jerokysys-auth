@@ -11,8 +11,8 @@
     <groupId>com.jerokysys</groupId>
     <artifactId>auth</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>jerokysys-auth</name>
-    <description>jerokysys-auth</description>
+    <name>auth</name>
+    <description>auth</description>
     <properties>
         <java.version>17</java.version>
         <spring-cloud.version>2025.1.3</spring-cloud.version>

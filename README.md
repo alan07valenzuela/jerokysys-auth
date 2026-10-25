@@ -222,5 +222,4 @@ Usa H2 en memoria con `ddl-auto=none` y Eureka deshabilitado. Por ahora solo se 
 - **Cambiar el usuario `admin` sembrado por el changelog de `commons`** (`admin` / `admin123`) antes de cualquier despliegue.
 - Rotar `JWT_SECRET` y la password de la base si se compartió el repositorio.
 - No hay refresh token, logout ni revocación: al vencer (10 min) hay que volver a loguearse.
-- No hay CORS configurado y el gateway todavía no tiene ruta hacia `jerokysys-auth`; hoy se accede directo al puerto `9000`.
 - El bloqueo de intentos es local al proceso (no distribuido).

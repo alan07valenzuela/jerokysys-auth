@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import com.jerokysys.auth.config.OpenApiConfig;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 @RequestMapping("/users")
@@ -37,22 +39,26 @@ public class UserController {
     }
 
     @GetMapping
+    @SecurityRequirement(name = OpenApiConfig.BEARER)
     public Response<PageResult<UserResponse>> findAll(@ModelAttribute PagedFilter filter) {
         return Response.success(userService.findAll(filter));
     }
 
     @GetMapping("/{id}")
+    @SecurityRequirement(name = OpenApiConfig.BEARER)
     public Response<UserResponse> findById(@PathVariable Long id) {
         return Response.success(userService.findById(id));
     }
 
     @PutMapping("/{id}")
+    @SecurityRequirement(name = OpenApiConfig.BEARER)
     public Response<UserResponse> update(@PathVariable Long id,
                                          @Valid @RequestBody UpdateUserRequest request) {
         return Response.success(userService.update(id, request), "User updated");
     }
 
     @DeleteMapping("/{id}")
+    @SecurityRequirement(name = OpenApiConfig.BEARER)
     public Response<Void> delete(@PathVariable Long id) {
         userService.delete(id);
         return Response.success("User deleted");
