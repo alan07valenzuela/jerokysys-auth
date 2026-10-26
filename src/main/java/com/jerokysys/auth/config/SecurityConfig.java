@@ -1,21 +1,23 @@
 package com.jerokysys.auth.config;
 
-import com.jerokysys.auth.security.JwtAuthenticationFilter;
-import com.jerokysys.auth.service.JWTService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.jerokysys.auth.security.JwtAuthenticationFilter;
+import com.jerokysys.auth.security.SecurityErrors;
+import com.jerokysys.auth.service.JWTService;
+
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -35,8 +37,14 @@ public class SecurityConfig {
                         .anyRequest().hasRole("ADMIN"))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService),
                         UsernamePasswordAuthenticationFilter.class)
+                // 401 sin token / 403 sin rol, siempre en JSON y sin trazas.
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                        .authenticationEntryPoint((request, response, authException) ->
+                                SecurityErrors.write(response, 401, "UNAUTHORIZED",
+                                        "Authentication required"))
+                        .accessDeniedHandler((request, response, accessDeniedException) ->
+                                SecurityErrors.write(response, 403, "FORBIDDEN",
+                                        "Access denied")))
                 .build();
     }
 
