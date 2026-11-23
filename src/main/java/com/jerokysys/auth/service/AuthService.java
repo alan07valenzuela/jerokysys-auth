@@ -50,7 +50,8 @@ public class AuthService {
         }
 
         loginAttempts.recordSuccess(key);
-        return authenticated.map(user -> jwtService.generate(user.getUsername(), user.getRole().name()));
+        return authenticated.map(user ->
+                jwtService.generate(user.getUsername(), user.getRole().name(), user.getRole().permissions()));
     }
 
     private static String normalize(String username) {

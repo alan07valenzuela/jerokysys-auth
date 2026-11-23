@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class JWTService {
@@ -25,6 +26,7 @@ public class JWTService {
     private final String issuer;
     private final String userClaim;
     private final String roleClaim;
+    private final String permissionsClaim;
 
     public JWTService(@Value("${jwt.secret}") String secret,
                        @Value("${jwt.algorithm}") String algorithmName,
@@ -32,7 +34,8 @@ public class JWTService {
                        @Value("${jwt.subject}") String subject,
                        @Value("${jwt.issuer}") String issuer,
                        @Value("${jwt.claim.user}") String userClaim,
-                       @Value("${jwt.claim.role}") String roleClaim) {
+                       @Value("${jwt.claim.role}") String roleClaim,
+                       @Value("${jwt.claim.permissions}") String permissionsClaim) {
         this.algorithm = SignatureAlgorithm.forName(algorithmName);
         this.secretKey = buildKey(secret, this.algorithm);
         this.expirationMinutes = expirationMinutes;
@@ -40,6 +43,7 @@ public class JWTService {
         this.issuer = issuer;
         this.userClaim = userClaim;
         this.roleClaim = roleClaim;
+        this.permissionsClaim = permissionsClaim;
     }
 
     @PostConstruct
@@ -52,11 +56,12 @@ public class JWTService {
         }
     }
 
-    public String generate(String user, String role) {
+    public String generate(String user, String role, List<String> permissions) {
         Instant now = Instant.now();
         var builder = Jwts.builder()
                 .claim(userClaim, user)
                 .claim(roleClaim, role)
+                .claim(permissionsClaim, permissions)
                 .subject(subject)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(expirationMinutes, ChronoUnit.MINUTES)));
@@ -83,6 +88,11 @@ public class JWTService {
     /** Nombre del claim que contiene el rol (configurable por jwt.claim.role). */
     public String roleClaim() {
         return roleClaim;
+    }
+
+    /** Nombre del claim que contiene los permisos (configurable por jwt.claim.permissions). */
+    public String permissionsClaim() {
+        return permissionsClaim;
     }
 
     private static SecretKey buildKey(String secret, SignatureAlgorithm algorithm) {
